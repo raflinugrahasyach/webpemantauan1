@@ -99,7 +99,7 @@
                 <div class="row">
                     <div class="col-lg-8">
                         <h4 class="mb-3">Live Monitoring: <span id="camera-status-text" class="text-primary">Tidak Aktif</span></h4>
-                        <img id="main-video-feed" class="video-feed" src="{{ url_for('video_feed') }}">
+                        <img id="main-video-feed" class="video-feed" src="{{ url_for('dashboard_video_feed') }}">
                     </div>
                     <div class="col-lg-4">
                         <h4 class="mb-3">Panel Kontrol</h4>
@@ -121,6 +121,7 @@
         const stopButton = document.getElementById('stopButton');
         const statusText = document.getElementById('status-text');
         const cameraStatusText = document.getElementById('camera-status-text');
+        const mainVideoFeed = document.getElementById('main-video-feed');
 
         function updateSystemStatus(active, active_camera) {
             if (active) {
@@ -128,10 +129,12 @@
                 startButton.disabled = true;
                 stopButton.disabled = false;
                 if(active_camera) {
-                    cameraStatusText.textContent = `Kamera ${active_camera} Aktif`;
+                    cameraStatusText.textContent = `Kamera ${active_camera} Aktif Deteksi`;
                 } else {
                     cameraStatusText.textContent = 'Menunggu Tujuan...';
                 }
+                // Reload the image to get the latest feed
+                mainVideoFeed.src = "{{ url_for('dashboard_video_feed') }}?" + new Date().getTime();
             } else {
                 statusText.innerHTML = '<span class="text-danger fw-bold">Tidak Aktif</span>';
                 startButton.disabled = false;
@@ -155,8 +158,17 @@
             });
         }
 
-        function startDetection() { fetch('/start_detection').then(() => fetchSystemStatus()); }
-        function stopDetection() { fetch('/stop_detection').then(() => fetchSystemStatus()); }
+        function startDetection() { 
+            fetch('/start_detection').then(() => {
+                setTimeout(fetchSystemStatus, 500);
+            }); 
+        }
+        function stopDetection() { 
+            fetch('/stop_detection').then(() => {
+                setTimeout(fetchSystemStatus, 500);
+                mainVideoFeed.src = "{{ url_for('dashboard_video_feed') }}?" + new Date().getTime();
+            }); 
+        }
         
         document.addEventListener('DOMContentLoaded', function() {
             fetchSystemStatus();
