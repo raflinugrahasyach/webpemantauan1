@@ -4,8 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Login - V-TRACK</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
 
         body, html {
             margin: 0;
@@ -16,6 +17,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            color: white;
         }
 
         .login-container {
@@ -25,7 +27,6 @@
             padding: 40px 30px;
             box-sizing: border-box;
             text-align: center;
-            color: white;
         }
 
         .logo {
@@ -34,10 +35,11 @@
         }
 
         .welcome-text {
-            font-weight: 600;
+            font-weight: 700;
             font-size: 18px;
             margin-bottom: 40px;
             letter-spacing: 1px;
+            line-height: 1.4;
         }
 
         form {
@@ -49,21 +51,24 @@
         .input-group {
             position: relative;
             width: 100%;
+            background-color: #f0f0f0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
         }
 
         input[type="text"],
         input[type="password"] {
             width: 100%;
-            padding: 12px 45px 12px 45px;
+            padding: 15px 45px 15px 50px;
             border-radius: 8px;
             border: none;
             font-size: 14px;
-            text-transform: uppercase;
+            font-weight: 600;
             box-sizing: border-box;
             outline: none;
-            background-color: #d1d5db;
-            color: #000;
-            font-weight: 600;
+            background-color: transparent;
+            color: #333;
         }
 
         input::placeholder {
@@ -73,19 +78,14 @@
 
         .input-icon {
             position: absolute;
-            top: 50%;
-            left: 12px;
-            transform: translateY(-50%);
+            left: 15px;
             color: #555;
             font-size: 18px;
-            pointer-events: none;
         }
 
         .toggle-password {
             position: absolute;
-            top: 50%;
-            right: 12px;
-            transform: translateY(-50%);
+            right: 15px;
             cursor: pointer;
             color: #555;
             font-size: 18px;
@@ -95,13 +95,14 @@
             background-color: #4a6cf7;
             border: none;
             border-radius: 6px;
-            padding: 12px 0;
+            padding: 15px 0;
             color: white;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 16px;
             cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
             transition: background-color 0.3s ease;
+            text-transform: uppercase;
         }
 
         button:hover {
@@ -113,45 +114,47 @@
             color: white;
             padding: 10px;
             border-radius: 6px;
-            margin-bottom: 15px;
+            margin-top: 15px;
             font-weight: 600;
         }
     </style>
-    <script>
-        function togglePassword() {
-            const passwordInput = document.getElementById('password');
-            const toggleIcon = document.getElementById('togglePasswordIcon');
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                toggleIcon.textContent = '🙈';
-            } else {
-                passwordInput.type = 'password';
-                toggleIcon.textContent = '👁️';
-            }
-        }
-    </script>
 </head>
 <body>
     <div class="login-container">
-        <img src="{{ url_for('static', filename='pusri_logoo.png') }}" alt="PUSRI Logo" class="logo" />
+        <img src="{{ url_for('static', filename='pusri_logoooo.png') }}" alt="PUSRI Logo" class="logo" />
         <div class="welcome-text">
-            SELAMAT DATANG DI WEBSITE<br />V- TRACK
+            SELAMAT DATANG DI WEBSITE<br />V-TRACK
         </div>
-        {% if error %}
-        <div class="error-message">{{ error }}</div>
-        {% endif %}
+        
         <form method="POST" action="/login" autocomplete="off">
             <div class="input-group">
-                <span class="input-icon">&#128100;</span>
+                <i class="fas fa-user input-icon"></i>
                 <input type="text" id="username" name="username" placeholder="USERNAME" required autofocus />
             </div>
             <div class="input-group">
-                <span class="input-icon">&#128274;</span>
+                <i class="fas fa-lock input-icon"></i>
                 <input type="password" id="password" name="password" placeholder="PASSWORD" required />
-                <span class="toggle-password" id="togglePasswordIcon" onclick="togglePassword()">👁️</span>
+                <i class="fas fa-eye-slash toggle-password" id="togglePasswordIcon"></i>
             </div>
             <button type="submit">LOGIN</button>
         </form>
+        {% if error %}
+        <div class="error-message">{{ error }}</div>
+        {% endif %}
     </div>
+
+    <script>
+        const togglePassword = document.querySelector('#togglePasswordIcon');
+        const password = document.querySelector('#password');
+
+        togglePassword.addEventListener('click', function (e) {
+            // toggle the type attribute
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            // toggle the icon
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+    </script>
 </body>
 </html>

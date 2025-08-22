@@ -5,21 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dashboard - V-TRACK</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body {
+        body, html {
             margin: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #2f3b7a;
-            display: flex;
+            background-color: #f4f7fc;
             height: 100vh;
-            color: white;
+        }
+        .main-container {
+            display: flex;
+            height: 100%;
         }
         .sidebar {
-            background-color: #f7c600;
-            width: 220px;
+            background-color: #3b4ca6;
+            width: 250px;
+            flex-shrink: 0;
             display: flex;
             flex-direction: column;
-            padding: 20px 0;
+            padding-top: 20px;
+            color: white;
+        }
+        .sidebar .logo {
+            width: 180px;
+            margin: 0 auto 30px auto;
         }
         .sidebar a {
             color: white;
@@ -32,51 +41,129 @@
             transition: background-color 0.3s ease;
         }
         .sidebar a:hover, .sidebar a.active {
-            background-color: #d4a800;
+            background-color: #4a6cf7;
         }
         .sidebar a i {
-            margin-right: 12px;
-            font-size: 18px;
+            margin-right: 15px;
+            font-size: 20px;
+            width: 25px;
+            text-align: center;
         }
         .content {
             flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
+            padding: 30px;
+            overflow-y: auto;
         }
-        .logo {
-            width: 500px;
-            margin-bottom: 40px;
+        .main-panel {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
-        .btn-tambah {
-            background-color: #4a6cf7;
-            border: none;
-            border-radius: 6px;
-            padding: 12px 24px;
-            color: white;
-            font-weight: 600;
-            font-size: 16px;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            transition: background-color 0.3s ease;
+        .stat-card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            color: #3b4ca6;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
-        .btn-tambah:hover {
-            background-color: #3a54d1;
+        .video-feed {
+            width: 100%;
+            height: 480px;
+            object-fit: cover;
+            background-color: #e9ecef;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
         }
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <a href="{{ url_for('dashboard') }}" class="active"><i class="fas fa-home"></i> Dashboard</a>
-        <a href="{{ url_for('riwayat') }}"><i class="fas fa-clock"></i> Riwayat</a>
-        <a href="#"><i class="fas fa-user"></i> User</a>
-        <a href="{{ url_for('logout') }}"><i class="fas fa-power-off"></i> Log Out</a>
+    <div class="main-container">
+        <div class="sidebar">
+            <img src="{{ url_for('static', filename='pusri_logoooo.png') }}" alt="PUSRI Logo" class="logo" />
+            <a href="{{ url_for('dashboard') }}" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="{{ url_for('riwayat') }}"><i class="fas fa-history"></i> Riwayat</a>
+            <a href="{{ url_for('tambah_tujuan') }}"><i class="fas fa-plus-circle"></i> Tambah Tujuan</a>
+            <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+        </div>
+
+        <div class="content">
+            <div class="row mb-4">
+                <div class="col-md-3"><div class="stat-card text-center"><h1 id="total-deteksi">0</h1><p class="mb-0">Total Deteksi</p></div></div>
+                <div class="col-md-3"><div class="stat-card text-center"><h1 id="deteksi-hari-ini">0</h1><p class="mb-0">Deteksi Hari Ini</p></div></div>
+                <div class="col-md-3"><div class="stat-card text-center"><h1 id="deteksi-minggu-ini">0</h1><p class="mb-0">Deteksi Minggu Ini</p></div></div>
+                <div class="col-md-3"><div class="stat-card text-center"><h1 id="deteksi-bulan-ini">0</h1><p class="mb-0">Deteksi Bulan Ini</p></div></div>
+            </div>
+
+            <div class="main-panel">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <h4 class="mb-3">Live Monitoring: <span id="camera-status-text" class="text-primary">Tidak Aktif</span></h4>
+                        <img id="main-video-feed" class="video-feed" src="{{ url_for('video_feed') }}">
+                    </div>
+                    <div class="col-lg-4">
+                        <h4 class="mb-3">Panel Kontrol</h4>
+                        <div class="d-grid gap-3">
+                            <button class="btn btn-success btn-lg" id="startButton" onclick="startDetection()"><i class="fas fa-play me-2"></i> Mulai Sistem</button>
+                            <button class="btn btn-danger btn-lg" id="stopButton" onclick="stopDetection()" disabled><i class="fas fa-stop me-2"></i> Hentikan Sistem</button>
+                            <div class="mt-3 text-center">
+                                <strong>Status:</strong> <span id="status-text">Tidak Aktif</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="content">
-        <img src="{{ url_for('static', filename='pusri_logoooo.png') }}" alt="PUSRI Logo" class="logo" />
-        <a href="{{ url_for('tambah_tujuan') }}" class="btn-tambah" style="text-decoration:none; display:inline-block; text-align:center; line-height:36px;">TAMBAH TUJUAN</a>
-    </div>
+    
+    <script>
+        const startButton = document.getElementById('startButton');
+        const stopButton = document.getElementById('stopButton');
+        const statusText = document.getElementById('status-text');
+        const cameraStatusText = document.getElementById('camera-status-text');
+
+        function updateSystemStatus(active, active_camera) {
+            if (active) {
+                statusText.innerHTML = '<span class="text-success fw-bold">Aktif</span>';
+                startButton.disabled = true;
+                stopButton.disabled = false;
+                if(active_camera) {
+                    cameraStatusText.textContent = `Kamera ${active_camera} Aktif`;
+                } else {
+                    cameraStatusText.textContent = 'Menunggu Tujuan...';
+                }
+            } else {
+                statusText.innerHTML = '<span class="text-danger fw-bold">Tidak Aktif</span>';
+                startButton.disabled = false;
+                stopButton.disabled = true;
+                cameraStatusText.textContent = 'Tidak Aktif';
+            }
+        }
+        
+        function fetchSystemStatus() {
+            fetch('/api/status').then(res => res.json()).then(data => {
+                updateSystemStatus(data.is_running, data.active_camera);
+            });
+        }
+
+        function fetchStats() {
+            fetch('/api/stats').then(res => res.json()).then(data => {
+                document.getElementById('total-deteksi').textContent = data.total;
+                document.getElementById('deteksi-hari-ini').textContent = data.today;
+                document.getElementById('deteksi-minggu-ini').textContent = data.this_week;
+                document.getElementById('deteksi-bulan-ini').textContent = data.this_month;
+            });
+        }
+
+        function startDetection() { fetch('/start_detection').then(() => fetchSystemStatus()); }
+        function stopDetection() { fetch('/stop_detection').then(() => fetchSystemStatus()); }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchSystemStatus();
+            fetchStats();
+            setInterval(fetchSystemStatus, 3000);
+            setInterval(fetchStats, 10000);
+        });
+    </script>
 </body>
 </html>
