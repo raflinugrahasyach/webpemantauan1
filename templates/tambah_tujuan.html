@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tambah Tujuan - V-TRACK</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #2f3b7a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+        .form-container {
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .logo {
+            width: 350px;
+            margin: 0 auto 40px auto;
+            display: block;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        input[type="text"], select {
+            padding: 12px 15px;
+            border-radius: 6px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            outline: none;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 12px 0;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            width: 100%;
+            max-width: 150px;
+            margin: 0 auto;
+            display: block;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: background-color 0.3s ease;
+        }
+        .btn-tambah {
+            background-color: #4a6cf7;
+            color: white;
+            margin-bottom: 10px;
+        }
+        .btn-tambah:hover {
+            background-color: #3a54d1;
+        }
+        .btn-kembali {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-kembali:hover {
+            background-color: #b02a37;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <img src="{{ url_for('static', filename='pusri_logoooo.png') }}" alt="PUSRI Logo" class="logo" />
+        <form method="POST" action="/tambah_tujuan">
+            <input type="text" name="nama_pengunjung" placeholder="Nama Pengunjung" required />
+            <select name="lokasi_tujuan" required>
+                <option value="" disabled selected>Pilih Lokasi Tujuan</option>
+                <option value="Masjid">Masjid</option>
+                <option value="Departemen IT PSP">Departemen IT PSP</option>
+                <option value="Pabrik">Pabrik</option>
+            </select>
+            <input type="text" name="nomor_plat" placeholder="Nomor Plat Kendaraan" required />
+            <button type="submit" class="btn-tambah">Tambah</button>
+        </form>
+        <form action="{{ url_for('dashboard') }}" method="get">
+            <button type="submit" class="btn-kembali">Kembali</button>
+        </form>
+    </div>
+</body>
+</html>

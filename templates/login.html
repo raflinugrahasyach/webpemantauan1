@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Login - V-TRACK</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Open Sans', sans-serif;
+            background-color: #3b4ca6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-container {
+            background-color: #3b4ca6;
+            width: 100%;
+            max-width: 400px;
+            padding: 40px 30px;
+            box-sizing: border-box;
+            text-align: center;
+            color: white;
+        }
+
+        .logo {
+            width: 300px;
+            margin: 0 auto 20px auto;
+        }
+
+        .welcome-text {
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 40px;
+            letter-spacing: 1px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .input-group {
+            position: relative;
+            width: 100%;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 45px 12px 45px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            text-transform: uppercase;
+            box-sizing: border-box;
+            outline: none;
+            background-color: #d1d5db;
+            color: #000;
+            font-weight: 600;
+        }
+
+        input::placeholder {
+            color: #555;
+            font-weight: 600;
+        }
+
+        .input-icon {
+            position: absolute;
+            top: 50%;
+            left: 12px;
+            transform: translateY(-50%);
+            color: #555;
+            font-size: 18px;
+            pointer-events: none;
+        }
+
+        .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 12px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #555;
+            font-size: 18px;
+        }
+
+        button {
+            background-color: #4a6cf7;
+            border: none;
+            border-radius: 6px;
+            padding: 12px 0;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #3a54d1;
+        }
+
+        .error-message {
+            background-color: #ff4d4f;
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+    </style>
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.getElementById('togglePasswordIcon');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.textContent = '🙈';
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.textContent = '👁️';
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="login-container">
+        <img src="{{ url_for('static', filename='pusri_logoo.png') }}" alt="PUSRI Logo" class="logo" />
+        <div class="welcome-text">
+            SELAMAT DATANG DI WEBSITE<br />V- TRACK
+        </div>
+        {% if error %}
+        <div class="error-message">{{ error }}</div>
+        {% endif %}
+        <form method="POST" action="/login" autocomplete="off">
+            <div class="input-group">
+                <span class="input-icon">&#128100;</span>
+                <input type="text" id="username" name="username" placeholder="USERNAME" required autofocus />
+            </div>
+            <div class="input-group">
+                <span class="input-icon">&#128274;</span>
+                <input type="password" id="password" name="password" placeholder="PASSWORD" required />
+                <span class="toggle-password" id="togglePasswordIcon" onclick="togglePassword()">👁️</span>
+            </div>
+            <button type="submit">LOGIN</button>
+        </form>
+    </div>
+</body>
+</html>

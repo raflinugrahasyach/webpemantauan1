@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dashboard - V-TRACK</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #2f3b7a;
+            display: flex;
+            height: 100vh;
+            color: white;
+        }
+        .sidebar {
+            background-color: #f7c600;
+            width: 220px;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+        }
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            padding: 15px 30px;
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            background-color: #d4a800;
+        }
+        .sidebar a i {
+            margin-right: 12px;
+            font-size: 18px;
+        }
+        .content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .logo {
+            width: 500px;
+            margin-bottom: 40px;
+        }
+        .btn-tambah {
+            background-color: #4a6cf7;
+            border: none;
+            border-radius: 6px;
+            padding: 12px 24px;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: background-color 0.3s ease;
+        }
+        .btn-tambah:hover {
+            background-color: #3a54d1;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <a href="{{ url_for('dashboard') }}" class="active"><i class="fas fa-home"></i> Dashboard</a>
+        <a href="{{ url_for('riwayat') }}"><i class="fas fa-clock"></i> Riwayat</a>
+        <a href="#"><i class="fas fa-user"></i> User</a>
+        <a href="{{ url_for('logout') }}"><i class="fas fa-power-off"></i> Log Out</a>
+    </div>
+    <div class="content">
+        <img src="{{ url_for('static', filename='pusri_logoooo.png') }}" alt="PUSRI Logo" class="logo" />
+        <a href="{{ url_for('tambah_tujuan') }}" class="btn-tambah" style="text-decoration:none; display:inline-block; text-align:center; line-height:36px;">TAMBAH TUJUAN</a>
+    </div>
+</body>
+</html>
