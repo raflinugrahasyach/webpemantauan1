@@ -4,154 +4,44 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Login - V-TRACK</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
-
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            font-family: 'Open Sans', sans-serif;
-            background-color: #3b4ca6;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
-        }
-
-        .login-container {
-            background-color: #3b4ca6;
-            width: 100%;
-            max-width: 400px;
-            padding: 40px 30px;
-            box-sizing: border-box;
-            text-align: center;
-        }
-
-        .logo {
-            width: 300px;
-            margin: 0 auto 20px auto;
-        }
-
-        .welcome-text {
-            font-weight: 700;
-            font-size: 18px;
-            margin-bottom: 40px;
-            letter-spacing: 1px;
-            line-height: 1.4;
-        }
-
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .input-group {
-            position: relative;
-            width: 100%;
-            background-color: #f0f0f0;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-        }
-
-        input[type="text"],
-        input[type="password"] {
-            width: 100%;
-            padding: 15px 45px 15px 50px;
-            border-radius: 8px;
-            border: none;
-            font-size: 14px;
-            font-weight: 600;
-            box-sizing: border-box;
-            outline: none;
-            background-color: transparent;
-            color: #333;
-        }
-
-        input::placeholder {
-            color: #555;
-            font-weight: 600;
-        }
-
-        .input-icon {
-            position: absolute;
-            left: 15px;
-            color: #555;
-            font-size: 18px;
-        }
-
-        .toggle-password {
-            position: absolute;
-            right: 15px;
-            cursor: pointer;
-            color: #555;
-            font-size: 18px;
-        }
-
-        button {
-            background-color: #4a6cf7;
-            border: none;
-            border-radius: 6px;
-            padding: 15px 0;
-            color: white;
-            font-weight: 700;
-            font-size: 16px;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            transition: background-color 0.3s ease;
-            text-transform: uppercase;
-        }
-
-        button:hover {
-            background-color: #3a54d1;
-        }
-
-        .error-message {
-            background-color: #ff4d4f;
-            color: white;
-            padding: 10px;
-            border-radius: 6px;
-            margin-top: 15px;
-            font-weight: 600;
-        }
+        body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; background-color: #3F51B5; display: flex; justify-content: center; align-items: center; }
+        .login-container { width: 100%; max-width: 400px; padding: 40px 30px; text-align: center; color: white; }
+        .logo { width: 300px; margin: 0 auto 20px auto; }
+        .welcome-text { font-weight: 600; font-size: 18px; margin-bottom: 40px; }
+        .input-group { position: relative; width: 100%; margin-bottom: 20px; }
+        input { width: 100%; padding: 12px 45px; border-radius: 8px; border: none; font-size: 14px; background-color: #E8EAF6; box-sizing: border-box; }
+        .input-icon { position: absolute; top: 50%; left: 15px; transform: translateY(-50%); color: #777; }
+        .toggle-password { position: absolute; top: 50%; right: 15px; transform: translateY(-50%); cursor: pointer; color: #777; }
+        button { background-color: #4959C8; border: none; border-radius: 6px; padding: 12px 0; color: white; font-weight: 600; font-size: 16px; cursor: pointer; width: 100%; }
+        .error-message { background-color: #F44336; color: white; padding: 10px; border-radius: 6px; margin-bottom: 15px; }
     </style>
 </head>
 <body>
     <div class="login-container">
-        <img src="{{ url_for('static', filename='pusri_logoooo.png') }}" alt="PUSRI Logo" class="logo" />
-        <div class="welcome-text">
-            SELAMAT DATANG DI WEBSITE<br />V-TRACK
-        </div>
-        
-        <form method="POST" action="/login" autocomplete="off">
+        <img src="{{ url_for('static', filename='pusri_logoo.png') }}" alt="Logo" class="logo" />
+        <div class="welcome-text">SELAMAT DATANG DI WEBSITE<br />V- TRACK</div>
+        {% if error %}<div class="error-message">{{ error }}</div>{% endif %}
+        <form method="POST" action="/login">
             <div class="input-group">
                 <i class="fas fa-user input-icon"></i>
-                <input type="text" id="username" name="username" placeholder="USERNAME" required autofocus />
+                <input type="text" name="username" placeholder="USERNAME" required>
             </div>
             <div class="input-group">
                 <i class="fas fa-lock input-icon"></i>
-                <input type="password" id="password" name="password" placeholder="PASSWORD" required />
-                <i class="fas fa-eye-slash toggle-password" id="togglePasswordIcon"></i>
+                <input type="password" id="password" name="password" placeholder="PASSWORD" required>
+                <i class="fas fa-eye-slash toggle-password" id="togglePassword"></i>
             </div>
             <button type="submit">LOGIN</button>
         </form>
-        {% if error %}
-        <div class="error-message">{{ error }}</div>
-        {% endif %}
     </div>
-
     <script>
-        const togglePassword = document.querySelector('#togglePasswordIcon');
-        const password = document.querySelector('#password');
-
-        togglePassword.addEventListener('click', function (e) {
-            // toggle the type attribute
+        const toggle = document.getElementById('togglePassword');
+        const password = document.getElementById('password');
+        toggle.addEventListener('click', function() {
             const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
             password.setAttribute('type', type);
-            // toggle the icon
             this.classList.toggle('fa-eye');
             this.classList.toggle('fa-eye-slash');
         });

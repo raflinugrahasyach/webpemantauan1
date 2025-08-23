@@ -1,181 +1,101 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Dashboard - V-TRACK</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body, html {
-            margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7fc;
-            height: 100vh;
-        }
-        .main-container {
-            display: flex;
-            height: 100%;
-        }
-        .sidebar {
-            background-color: #3b4ca6;
-            width: 250px;
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            padding-top: 20px;
-            color: white;
-        }
-        .sidebar .logo {
-            width: 180px;
-            margin: 0 auto 30px auto;
-        }
-        .sidebar a {
-            color: white;
-            text-decoration: none;
-            padding: 15px 30px;
-            display: flex;
-            align-items: center;
-            font-weight: 600;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-        }
-        .sidebar a:hover, .sidebar a.active {
-            background-color: #4a6cf7;
-        }
-        .sidebar a i {
-            margin-right: 15px;
-            font-size: 20px;
-            width: 25px;
-            text-align: center;
-        }
-        .content {
-            flex-grow: 1;
-            padding: 30px;
-            overflow-y: auto;
-        }
-        .main-panel {
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        .stat-card {
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            color: #3b4ca6;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        .video-feed {
-            width: 100%;
-            height: 480px;
-            object-fit: cover;
-            background-color: #e9ecef;
-            border-radius: 8px;
-            border: 1px solid #dee2e6;
-        }
-    </style>
-</head>
-<body>
-    <div class="main-container">
-        <div class="sidebar">
-            <img src="{{ url_for('static', filename='pusri_logoooo.png') }}" alt="PUSRI Logo" class="logo" />
-            <a href="{{ url_for('dashboard') }}" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-            <a href="{{ url_for('riwayat') }}"><i class="fas fa-history"></i> Riwayat</a>
-            <a href="{{ url_for('tambah_tujuan') }}"><i class="fas fa-plus-circle"></i> Tambah Tujuan</a>
-            <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+{% extends "layout.html" %}
+{% block title %}Dashboard - V-TRACK{% endblock %}
+
+{% block styles %}
+<style>
+    .stat-box { background-color: #4959C8; color: white; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px; }
+    .stat-box h1 { font-size: 48px; font-weight: bold; margin: 0; }
+    .custom-card { background-color: #E8EAF6; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+    .camera-box { background-color: #F5C4C4; border: 2px solid white; border-radius: 8px; padding: 15px; height: 300px; display: flex; flex-direction: column; }
+    .camera-box .header { font-weight: bold; margin-bottom: 10px; }
+    .camera-box .feed-container { flex-grow: 1; background-color: black; border-radius: 5px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    .camera-box .feed-container img { width: 100%; height: 100%; object-fit: cover; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="row">
+        <div class="col-md-3"><div class="stat-box"><h1 id="total-deteksi">0</h1><p>Total Deteksi</p></div></div>
+        <div class="col-md-3"><div class="stat-box"><h1 id="deteksi-hari-ini">0</h1><p>Deteksi Hari Ini</p></div></div>
+        <div class="col-md-3"><div class="stat-box"><h1 id="deteksi-minggu-ini">0</h1><p>Deteksi Minggu Ini</p></div></div>
+        <div class="col-md-3"><div class="stat-box"><h1 id="deteksi-bulan-ini">0</h1><p>Bulan Ini</p></div></div>
+    </div>
+
+    <div class="custom-card">
+        <div class="row align-items-center">
+            <div class="col-md-auto"><strong><i class="fas fa-cog"></i> Panel Kontrol</strong></div>
+            <div class="col-md-2"><button id="start-btn" class="btn btn-success"><i class="fas fa-play me-2"></i>Mulai Deteksi</button></div>
+            <div class="col-md-2"><button id="stop-btn" class="btn btn-danger"><i class="fas fa-stop me-2"></i>Stop Deteksi</button></div>
+            <div class="col-md-2"><a href="{{ url_for('riwayat') }}" class="btn btn-light"><i class="fas fa-history me-2"></i>Lihat Riwayat</a></div>
+            <div class="col-md-4"><span class="fw-bold">Status: <span id="status-text" class="text-danger">Tidak Aktif</span></span></div>
         </div>
+    </div>
 
-        <div class="content">
-            <div class="row mb-4">
-                <div class="col-md-3"><div class="stat-card text-center"><h1 id="total-deteksi">0</h1><p class="mb-0">Total Deteksi</p></div></div>
-                <div class="col-md-3"><div class="stat-card text-center"><h1 id="deteksi-hari-ini">0</h1><p class="mb-0">Deteksi Hari Ini</p></div></div>
-                <div class="col-md-3"><div class="stat-card text-center"><h1 id="deteksi-minggu-ini">0</h1><p class="mb-0">Deteksi Minggu Ini</p></div></div>
-                <div class="col-md-3"><div class="stat-card text-center"><h1 id="deteksi-bulan-ini">0</h1><p class="mb-0">Deteksi Bulan Ini</p></div></div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="camera-box">
+                <div class="header"><i class="fas fa-car"></i> Deteksi Plat Nomor</div>
+                <div class="feed-container">
+                    <img id="dashboard-feed" src="{{ url_for('dashboard_video_feed') }}">
+                </div>
             </div>
-
-            <div class="main-panel">
-                <div class="row">
-                    <div class="col-lg-8">
-                        <h4 class="mb-3">Live Monitoring: <span id="camera-status-text" class="text-primary">Tidak Aktif</span></h4>
-                        <img id="main-video-feed" class="video-feed" src="{{ url_for('dashboard_video_feed') }}">
-                    </div>
-                    <div class="col-lg-4">
-                        <h4 class="mb-3">Panel Kontrol</h4>
-                        <div class="d-grid gap-3">
-                            <button class="btn btn-success btn-lg" id="startButton" onclick="startDetection()"><i class="fas fa-play me-2"></i> Mulai Sistem</button>
-                            <button class="btn btn-danger btn-lg" id="stopButton" onclick="stopDetection()" disabled><i class="fas fa-stop me-2"></i> Hentikan Sistem</button>
-                            <div class="mt-3 text-center">
-                                <strong>Status:</strong> <span id="status-text">Tidak Aktif</span>
-                            </div>
-                        </div>
-                    </div>
+        </div>
+        <div class="col-md-6">
+            <div class="camera-box">
+                <div class="header"><i class="fas fa-user"></i> Deteksi Wajah</div>
+                <div class="feed-container">
+                    <i class="fas fa-video fa-3x" style="color: #555;"></i>
                 </div>
             </div>
         </div>
     </div>
-    
-    <script>
-        const startButton = document.getElementById('startButton');
-        const stopButton = document.getElementById('stopButton');
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
         const statusText = document.getElementById('status-text');
-        const cameraStatusText = document.getElementById('camera-status-text');
-        const mainVideoFeed = document.getElementById('main-video-feed');
 
-        function updateSystemStatus(active, active_camera) {
-            if (active) {
-                statusText.innerHTML = '<span class="text-success fw-bold">Aktif</span>';
-                startButton.disabled = true;
-                stopButton.disabled = false;
-                if(active_camera) {
-                    cameraStatusText.textContent = `Kamera ${active_camera} Aktif Deteksi`;
+        function updateSystemStatus() {
+            fetch('/api/status').then(r => r.json()).then(data => {
+                statusText.classList.remove('text-success', 'text-danger');
+                if (data.is_running) {
+                    statusText.textContent = 'Aktif';
+                    statusText.classList.add('text-success');
                 } else {
-                    cameraStatusText.textContent = 'Menunggu Tujuan...';
+                    statusText.textContent = 'Tidak Aktif';
+                    statusText.classList.add('text-danger');
                 }
-                // Reload the image to get the latest feed
-                mainVideoFeed.src = "{{ url_for('dashboard_video_feed') }}?" + new Date().getTime();
-            } else {
-                statusText.innerHTML = '<span class="text-danger fw-bold">Tidak Aktif</span>';
-                startButton.disabled = false;
-                stopButton.disabled = true;
-                cameraStatusText.textContent = 'Tidak Aktif';
-            }
-        }
-        
-        function fetchSystemStatus() {
-            fetch('/api/status').then(res => res.json()).then(data => {
-                updateSystemStatus(data.is_running, data.active_camera);
             });
         }
 
-        function fetchStats() {
-            fetch('/api/stats').then(res => res.json()).then(data => {
-                document.getElementById('total-deteksi').textContent = data.total;
-                document.getElementById('deteksi-hari-ini').textContent = data.today;
-                document.getElementById('deteksi-minggu-ini').textContent = data.this_week;
-                document.getElementById('deteksi-bulan-ini').textContent = data.this_month;
+        function updateStats() {
+            fetch('/api/stats').then(r => r.json()).then(data => {
+                document.getElementById('total-deteksi').textContent = data.total || 0;
+                document.getElementById('deteksi-hari-ini').textContent = data.today || 0;
+                document.getElementById('deteksi-minggu-ini').textContent = data.this_week || 0;
+                document.getElementById('deteksi-bulan-ini').textContent = data.this_month || 0;
             });
         }
 
-        function startDetection() { 
+        document.getElementById('start-btn').addEventListener('click', () => {
             fetch('/start_detection').then(() => {
-                setTimeout(fetchSystemStatus, 500);
-            }); 
-        }
-        function stopDetection() { 
-            fetch('/stop_detection').then(() => {
-                setTimeout(fetchSystemStatus, 500);
-                mainVideoFeed.src = "{{ url_for('dashboard_video_feed') }}?" + new Date().getTime();
-            }); 
-        }
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            fetchSystemStatus();
-            fetchStats();
-            setInterval(fetchSystemStatus, 3000);
-            setInterval(fetchStats, 10000);
+                updateSystemStatus();
+                // Refresh the camera feed to make sure it shows the active one
+                document.getElementById('dashboard-feed').src = '/dashboard_video_feed?' + new Date().getTime();
+            });
         });
-    </script>
-</body>
-</html>
+        
+        document.getElementById('stop-btn').addEventListener('click', () => {
+            fetch('/stop_detection').then(updateSystemStatus);
+        });
+
+        updateSystemStatus();
+        updateStats();
+        setInterval(updateSystemStatus, 2000);
+        setInterval(updateStats, 10000);
+    });
+</script>
+{% endblock %}
