@@ -1,6 +1,7 @@
 -- Hapus tabel jika sudah ada untuk memastikan skema yang bersih
 DROP TABLE IF EXISTS deteksi;
 DROP TABLE IF EXISTS deteksi_wajah;
+DROP TABLE IF EXISTS deteksi_anomali;
 DROP TABLE IF EXISTS perjalanan;
 
 -- Tabel untuk mencatat setiap sesi perjalanan kendaraan
@@ -11,7 +12,7 @@ CREATE TABLE perjalanan (
     tujuan VARCHAR(100) NOT NULL,
     waktu_mulai DATETIME NOT NULL,
     waktu_selesai DATETIME,
-    -- Status bisa: 'Pending', 'Sesuai', 'Gagal', 'Perlu Cek Manual'
+    -- Status bisa 'Pending', 'Sesuai', 'Gagal', 'Perlu Cek Manual'
     status VARCHAR(50) NOT NULL DEFAULT 'Pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -38,3 +39,15 @@ CREATE TABLE deteksi_wajah (
     path_foto VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- --- PENAMBAHAN BARU ---
+-- Tabel untuk mencatat deteksi plat yang tidak terdaftar dalam perjalanan aktif
+CREATE TABLE deteksi_anomali (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nomor_plat VARCHAR(20) NOT NULL,
+    waktu_deteksi DATETIME NOT NULL,
+    path_foto VARCHAR(255) NOT NULL,
+    kamera_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+-- --- AKHIR PENAMBAHAN ---

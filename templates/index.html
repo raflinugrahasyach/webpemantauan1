@@ -23,12 +23,9 @@
             border-radius: 12px;
             overflow: hidden;
             background-color: #000;
-            border: 5px solid #6c757d; /* Border default abu-abu */
+            border: 5px solid #6c757d;
             transition: border-color 0.5s ease-in-out;
         }
-        .video-container.border-success { border-color: #198754; } /* Hijau untuk sukses */
-        .video-container.border-fail { border-color: #dc3545; } /* Merah untuk gagal */
-
         .video-feed { width: 100%;}
         .status-indicator { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 8px; }
         .status-active { background-color: #28a745; animation: pulse 2s infinite; }
@@ -45,18 +42,21 @@
         .toast { opacity: 0.95 !important; color: white; }
         .toast-header { color: white; }
         .toast-header .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
-        .toast-Sesuai, .toast-info { background-color: rgba(40, 167, 69, 0.9); }
-        .toast-Gagal, .toast-warning { background-color: rgba(220, 53, 69, 0.9); }
-        .toast-Perlu-Cek-Manual { background-color: rgba(108, 117, 125, 0.9); }
+        .toast-Sesuai { background-color: rgba(40, 167, 69, 0.9); }
+        .toast-Gagal { background-color: rgba(220, 53, 69, 0.9); }
+        .toast-Perlu-Cek-Manual { background-color: rgba(255, 193, 7, 0.9); color: black !important; }
+        .toast-Perlu-Cek-Manual .toast-header { color: black; }
+        .toast-Perlu-Cek-Manual .btn-close { filter: none; }
     </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('dashboard') }}"><i class="fas fa-camera"></i> V-TRACK</a>
+            <a class="navbar-brand" href="{{ url_for('index') }}"><i class="fas fa-camera"></i> V-TRACK</a>
             <div class="navbar-nav ms-auto">
                 <a class="nav-link" href="{{ url_for('dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
                 <a class="nav-link" href="{{ url_for('riwayat') }}"><i class="fas fa-history"></i> Riwayat</a>
+                <a class="nav-link" href="{{ url_for('tambah_tujuan') }}"><i class="fas fa-plus-circle"></i> Tambah Tujuan</a>
                 <a class="nav-link" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
             </div>
         </div>
@@ -87,7 +87,7 @@
                             <i class="fas fa-video"></i> Live Camera Feed: <strong id="camera-status-text">Tidak Aktif</strong>
                         </h5>
                         <div class="video-container" id="video-container">
-                            <img id="main-video-feed" class="video-feed" src="{{ url_for('video_feed') }}" alt="Live Feed">
+                            <img id="main-video-feed" class="video-feed" src="{{ url_for('dashboard_video_feed') }}" alt="Live Feed">
                         </div>
                     </div>
                 </div>
@@ -104,10 +104,8 @@
         const startButton = document.getElementById('startButton');
         const stopButton = document.getElementById('stopButton');
         const cameraStatusText = document.getElementById('camera-status-text');
-        const videoContainer = document.getElementById('video-container');
         let notificationInterval;
         let systemStatusInterval;
-        let detectionStatusInterval;
         let shownNotifications = new Set();
 
         function updateSystemStatus(active) {
@@ -122,7 +120,6 @@
                 startButton.disabled = false;
                 stopButton.disabled = true;
                 cameraStatusText.textContent = 'Tidak Aktif';
-                videoContainer.className = 'video-container';
             }
         }
 
@@ -132,9 +129,8 @@
                 .then(data => {
                     if (data.status === 'started' || data.status === 'already_running') {
                         updateSystemStatus(true);
-                        if (!notificationInterval) notificationInterval = setInterval(fetchNotifications, 5000);
+                        if (!notificationInterval) notificationInterval = setInterval(fetchNotifications, 3000);
                         if (!systemStatusInterval) systemStatusInterval = setInterval(fetchSystemStatus, 3000);
-                        if (!detectionStatusInterval) detectionStatusInterval = setInterval(fetchDetectionStatus, 1000); // Polling setiap 1 detik
                         showToast('Sistem deteksi berhasil diaktifkan.', 'Sesuai');
                     }
                 });
@@ -150,8 +146,6 @@
                         notificationInterval = null;
                         clearInterval(systemStatusInterval);
                         systemStatusInterval = null;
-                        clearInterval(detectionStatusInterval);
-                        detectionStatusInterval = null;
                         showToast('Sistem deteksi telah dihentikan.', 'Gagal');
                     }
                 });
@@ -175,6 +169,7 @@
             fetch('/api/status')
                 .then(response => response.json())
                 .then(data => {
+                    updateSystemStatus(data.is_running);
                     if (data.is_running && data.active_camera) {
                         cameraStatusText.textContent = `Kamera ${data.active_camera} Aktif`;
                     } else if (data.is_running) {
@@ -184,28 +179,21 @@
                     }
                 });
         }
-
-        function fetchDetectionStatus() {
-            fetch('/api/detection_status')
-                .then(response => response.json())
-                .then(data => {
-                    videoContainer.classList.remove('border-success', 'border-fail');
-                    if(data.status === 'success') {
-                        videoContainer.classList.add('border-success');
-                    } else if (data.status === 'fail') {
-                        videoContainer.classList.add('border-fail');
-                    }
-                });
-        }
         
         function showToast(message, status) {
             const container = document.getElementById('notification-container');
             const toastClass = 'toast-' + status.replace(/\s/g, '-');
+            const iconClass = {
+                'Sesuai': 'fa-check-circle',
+                'Gagal': 'fa-times-circle',
+                'Perlu-Cek-Manual': 'fa-exclamation-triangle'
+            }[status] || 'fa-bell';
+
             const toastHTML = `
                 <div class="toast show ${toastClass}" role="alert" aria-live="assertive" aria-atomic="true">
                     <div class="toast-header ${toastClass}">
-                        <i class="fas fa-bell me-2"></i>
-                        <strong class="me-auto">V-TRACK</strong>
+                        <i class="fas ${iconClass} me-2"></i>
+                        <strong class="me-auto">V-TRACK NOTIFIKASI</strong>
                         <small>${new Date().toLocaleTimeString()}</small>
                         <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
                     </div>
@@ -214,10 +202,14 @@
             `;
             container.insertAdjacentHTML('beforeend', toastHTML);
             const newToastEl = container.lastElementChild;
-            const bsToast = new bootstrap.Toast(newToastEl, { delay: 10000 });
+            const bsToast = new bootstrap.Toast(newToastEl, { delay: 15000 });
             bsToast.show();
             newToastEl.addEventListener('hidden.bs.toast', () => newToastEl.remove());
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchSystemStatus();
+        });
     </script>
 </body>
 </html>

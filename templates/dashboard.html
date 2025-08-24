@@ -6,9 +6,9 @@
     .stat-box { background-color: #4959C8; color: white; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px; }
     .stat-box h1 { font-size: 48px; font-weight: bold; margin: 0; }
     .custom-card { background-color: #E8EAF6; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
-    .camera-box { background-color: #F5C4C4; border: 2px solid white; border-radius: 8px; padding: 15px; height: 300px; display: flex; flex-direction: column; }
+    .camera-box { background-color: #F5C4C4; border: 2px solid white; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; }
     .camera-box .header { font-weight: bold; margin-bottom: 10px; }
-    .camera-box .feed-container { flex-grow: 1; background-color: black; border-radius: 5px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    .camera-box .feed-container { flex-grow: 1; background-color: black; border-radius: 5px; overflow: hidden; display: flex; align-items: center; justify-content: center; aspect-ratio: 16/9; }
     .camera-box .feed-container img { width: 100%; height: 100%; object-fit: cover; }
 </style>
 {% endblock %}
@@ -33,19 +33,11 @@
     </div>
 
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-12">
             <div class="camera-box">
-                <div class="header"><i class="fas fa-car"></i> Deteksi Plat Nomor</div>
+                <div class="header"><i class="fas fa-car"></i> Deteksi Plat Nomor (Kamera Aktif)</div>
                 <div class="feed-container">
                     <img id="dashboard-feed" src="{{ url_for('dashboard_video_feed') }}">
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="camera-box">
-                <div class="header"><i class="fas fa-user"></i> Deteksi Wajah</div>
-                <div class="feed-container">
-                    <i class="fas fa-video fa-3x" style="color: #555;"></i>
                 </div>
             </div>
         </div>
@@ -68,7 +60,7 @@
                     statusText.textContent = 'Tidak Aktif';
                     statusText.classList.add('text-danger');
                 }
-            });
+            }).catch(error => console.error('Error fetching system status:', error));
         }
 
         function updateStats() {
@@ -77,13 +69,12 @@
                 document.getElementById('deteksi-hari-ini').textContent = data.today || 0;
                 document.getElementById('deteksi-minggu-ini').textContent = data.this_week || 0;
                 document.getElementById('deteksi-bulan-ini').textContent = data.this_month || 0;
-            });
+            }).catch(error => console.error('Error fetching stats:', error));
         }
 
         document.getElementById('start-btn').addEventListener('click', () => {
             fetch('/start_detection').then(() => {
                 updateSystemStatus();
-                // Refresh the camera feed to make sure it shows the active one
                 document.getElementById('dashboard-feed').src = '/dashboard_video_feed?' + new Date().getTime();
             });
         });
@@ -94,7 +85,7 @@
 
         updateSystemStatus();
         updateStats();
-        setInterval(updateSystemStatus, 2000);
+        setInterval(updateSystemStatus, 5000);
         setInterval(updateStats, 10000);
     });
 </script>

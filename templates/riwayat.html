@@ -15,28 +15,36 @@
 
 {% block content %}
 <div class="container-fluid p-0">
+    <!-- BAGIAN FILTER & EXPORT -->
     <div class="custom-card">
         <h6><i class="fas fa-filter"></i> Filter & Export</h6>
         <hr>
-        <form class="row g-3 align-items-end">
-            <div class="col-md-3"><label class="form-label">Tanggal</label><input type="date" class="form-control"></div>
-            <div class="col-md-3"><label class="form-label">Nomor Plat</label><input type="text" class="form-control" placeholder="Cari plat nomor..."></div>
-            <div class="col-md-2"><label class="form-label">Confidence</label><select class="form-select"><option>Semua</option></select></div>
-            <div class="col-md-1"><button type="submit" class="btn btn-primary w-100">Filter</button></div>
-            <div class="col-md-3 d-flex justify-content-end">
-                <button class="btn btn-success me-2">Export CSV</button>
-                <button class="btn btn-success me-2">Export Excel</button>
-                <button class="btn btn-secondary">Print</button>
+        <div class="row g-3 align-items-end mb-3">
+            <div class="col-md-4">
+                <label class="form-label">Filter Tanggal</label>
+                <input type="date" class="form-control" id="filterTanggal">
             </div>
-        </form>
+            <div class="col-md-4">
+                <label class="form-label">Filter Nomor Plat</label>
+                <input type="text" class="form-control" id="filterPlat" placeholder="Ketik plat nomor...">
+            </div>
+            <div class="col-md-4">
+                <button type="button" class="btn btn-primary w-100" onclick="applyFilters()">Terapkan Filter</button>
+            </div>
+        </div>
+        <div class="d-flex justify-content-end">
+            <button class="btn btn-success me-2" onclick="exportToCSV()"><i class="fas fa-file-csv"></i> Export CSV</button>
+            <button class="btn btn-info me-2" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Export Excel</button>
+            <button class="btn btn-secondary" onclick="printReport()"><i class="fas fa-print"></i> Print</button>
+        </div>
     </div>
 
     <div class="custom-card">
-        <h6>Riwayat Deteksi Plat Nomor</h6>
+        <h6>Riwayat Perjalanan Kendaraan</h6>
         <table id="riwayat-table" class="table table-striped" style="width:100%">
             <thead class="table-header">
                 <tr>
-                    <th>No</th>
+                    <th>ID</th>
                     <th>Foto</th>
                     <th>Nomor Plat</th>
                     <th>Waktu Mulai</th>
@@ -55,6 +63,104 @@
 <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
 <script>
+    let allData = []; // Variabel global untuk menyimpan semua data untuk export
+    let dataTable;
+
+    // --- FUNGSI UNTUK FILTER DAN EXPORT ---
+    function applyFilters() {
+        const plat = document.getElementById('filterPlat').value;
+        const tanggal = document.getElementById('filterTanggal').value;
+
+        // Gunakan API DataTables untuk filter
+        dataTable.column(2).search(plat);
+        
+        // Filter tanggal custom
+        $.fn.dataTable.ext.search.pop();
+        if (tanggal) {
+            $.fn.dataTable.ext.search.push(
+                function(settings, data, dataIndex) {
+                    var api = new $.fn.dataTable.Api(settings);
+                    var rowData = api.row(dataIndex).data();
+                    var rowDate = new Date(rowData.waktu_mulai).toISOString().split('T')[0];
+                    return rowDate === tanggal;
+                }
+            );
+        }
+        dataTable.draw();
+    }
+
+    function exportToCSV() {
+        const headers = "ID,Nomor Plat,Tujuan,Waktu Mulai,Status\n";
+        const csvContent = "data:text/csv;charset=utf-8," + headers +
+            allData.map(item => 
+                `${item.id},"${item.nomor_plat}","${item.tujuan}","${new Date(item.waktu_mulai).toLocaleString('id-ID')}","${item.status}"`
+            ).join("\n");
+        
+        const link = document.createElement("a");
+        link.setAttribute("href", encodeURI(csvContent));
+        link.setAttribute("download", `riwayat_perjalanan_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function exportToExcel() {
+        const tableHTML = `
+            <table border="1">
+                <thead><tr><th>ID</th><th>Nomor Plat</th><th>Tujuan</th><th>Waktu Mulai</th><th>Status</th></tr></thead>
+                <tbody>
+                ${allData.map(item => `
+                    <tr>
+                        <td>${item.id}</td>
+                        <td>${item.nomor_plat}</td>
+                        <td>${item.tujuan}</td>
+                        <td>${new Date(item.waktu_mulai).toLocaleString('id-ID')}</td>
+                        <td>${item.status}</td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>`;
+        
+        const blob = new Blob([tableHTML], { type: 'application/vnd.ms-excel' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `riwayat_perjalanan_${new Date().toISOString().split('T')[0]}.xls`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    function printReport() {
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <html><head><title>Laporan Riwayat Perjalanan</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f2f2f2; }
+                .header { text-align: center; margin-bottom: 20px; }
+            </style></head><body>
+                <div class="header"><h2>Laporan Riwayat Perjalanan</h2></div>
+                <table>
+                    <thead><tr><th>ID</th><th>Nomor Plat</th><th>Tujuan</th><th>Waktu Mulai</th><th>Status</th></tr></thead>
+                    <tbody>
+                    ${allData.map(item => `
+                        <tr>
+                            <td>${item.id}</td>
+                            <td>${item.nomor_plat}</td>
+                            <td>${item.tujuan}</td>
+                            <td>${new Date(item.waktu_mulai).toLocaleString('id-ID')}</td>
+                            <td>${item.status}</td>
+                        </tr>`).join('')}
+                    </tbody>
+                </table>
+            </body></html>`);
+        printWindow.document.close();
+        printWindow.print();
+    }
+
     function getStatusBadge(status) {
         const icons = { 'Sesuai': 'fa-check-circle', 'Gagal': 'fa-times-circle', 'Perlu Cek Manual': 'fa-exclamation-triangle', 'Pending': 'fa-clock' };
         const colors = { 'Sesuai': 'success', 'Gagal': 'danger', 'Perlu Cek Manual': 'warning', 'Pending': 'secondary' };
@@ -64,24 +170,30 @@
     }
 
     $(document).ready(function() {
-        const table = $('#riwayat-table').DataTable({
+        dataTable = $('#riwayat-table').DataTable({
             "order": [[0, "desc"]],
             "language": { "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json" },
-            "ajax": { "url": "/api/riwayat", "dataSrc": "" },
+            "ajax": { 
+                "url": "/api/riwayat", 
+                "dataSrc": function ( json ) {
+                    allData = json; // Simpan data ke variabel global setiap kali data di-load
+                    return json;
+                }
+            },
             "columns": [
                 { "data": "id" },
-                { "data": "path_foto", "render": data => data ? `<img src="/${data}" style="width: 80px; border-radius: 4px;">` : '-', "orderable": false },
+                { "data": "path_foto", "render": data => data ? `<img src="/${data.replace(/\\/g, '/')}" style="width: 80px; border-radius: 4px;">` : '-', "orderable": false },
                 { "data": "nomor_plat", "render": data => `<span class="plate-badge">${data}</span>` },
-                { "data": "waktu_mulai" },
+                { "data": "waktu_mulai", "render": data => new Date(data).toLocaleString('id-ID') },
                 { "data": "tujuan" },
                 { "data": "status", "render": getStatusBadge },
                 { "data": null, "orderable": false, "render": (data, type, row) => `
                     <a href="/pemantauan/${row.id}" class="action-btn btn-view" title="Pantau"><i class="fas fa-eye"></i></a>
-                    <a href="/verifikasi/${row.id}" class="action-btn btn-delete" title="Verifikasi/Hapus"><i class="fas fa-trash-alt"></i></a>
+                    <a href="/verifikasi/${row.id}" class="action-btn btn-delete" title="Verifikasi/Edit"><i class="fas fa-edit"></i></a>
                 `}
             ]
         });
-        setInterval(() => table.ajax.reload(null, false), 10000);
+        setInterval(() => dataTable.ajax.reload(null, false), 10000);
     });
 </script>
 {% endblock %}

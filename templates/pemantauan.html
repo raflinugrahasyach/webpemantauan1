@@ -3,53 +3,101 @@
 
 {% block styles %}
 <style>
-    .camera-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
-    .camera-box { background-color: #F5C4C4; border: 4px solid white; border-radius: 12px; overflow: hidden; position: relative; aspect-ratio: 4 / 3; }
-    .camera-box img { width: 100%; height: 100%; object-fit: cover; }
-    .camera-box.detected { border-color: #4CAF50; }
-    .camera-overlay { position: absolute; top: 0; left: 0; right: 0; background: rgba(0,0,0,0.5); color: white; padding: 10px; font-weight: bold; }
+    .camera-grid { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); 
+        gap: 20px; 
+    }
+    .camera-box { 
+        background-color: #333; /* Warna default gelap */
+        border: 4px solid #6c757d; /* Abu-abu */
+        border-radius: 12px; 
+        overflow: hidden; 
+        position: relative; 
+        aspect-ratio: 4 / 3; 
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: border-color 0.5s ease;
+    }
+    .camera-box.detected { 
+        border-color: #4CAF50; /* Hijau jika terdeteksi */
+    }
+    .camera-box .placeholder-icon {
+        font-size: 5rem;
+        color: #6c757d;
+    }
+    .camera-box.detected .placeholder-icon {
+        color: #4CAF50;
+    }
+    .camera-overlay { 
+        position: absolute; 
+        top: 0; 
+        left: 0; 
+        right: 0; 
+        background: rgba(0,0,0,0.5); 
+        color: white; 
+        padding: 10px; 
+        font-weight: bold; 
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="camera-grid">
-    <div id="cam-feed-1" class="camera-box"><div class="camera-overlay">Kamera 1</div><img id="cam-img-1" src="/video_feed/1"></div>
-    <div id="cam-feed-2" class="camera-box"><div class="camera-overlay">Kamera 2</div><img id="cam-img-2" src="/video_feed/2"></div>
-    <div id="cam-feed-3" class="camera-box"><div class="camera-overlay">Kamera 3</div><img id="cam-img-3" src="/video_feed/3"></div>
-    <div id="cam-feed-4" class="camera-box"><div class="camera-overlay">Kamera 4</div><img id="cam-img-4" src="/video_feed/4"></div>
+<div class="container-fluid p-0">
+    <h3 class="text-white mb-4">Pemantauan Perjalanan ID: {{ perjalanan_id }}</h3>
+    <div class="camera-grid">
+        <!-- Kotak untuk 6 kamera, sesuai permintaan rute -->
+        <div id="cam-box-1" class="camera-box"><div class="camera-overlay">Kamera 1</div><i class="fas fa-video placeholder-icon"></i></div>
+        <div id="cam-box-2" class="camera-box"><div class="camera-overlay">Kamera 2</div><i class="fas fa-video placeholder-icon"></i></div>
+        <div id="cam-box-3" class="camera-box"><div class="camera-overlay">Kamera 3</div><i class="fas fa-video placeholder-icon"></i></div>
+        <div id="cam-box-4" class="camera-box"><div class="camera-overlay">Kamera 4</div><i class="fas fa-video placeholder-icon"></i></div>
+        <div id="cam-box-5" class="camera-box"><div class="camera-overlay">Kamera 5</div><i class="fas fa-video placeholder-icon"></i></div>
+        <div id="cam-box-6" class="camera-box"><div class="camera-overlay">Kamera 6</div><i class="fas fa-video placeholder-icon"></i></div>
+    </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
     const PERJALANAN_ID = "{{ perjalanan_id }}";
-    let intervalId;
+    let statusUpdateInterval;
 
     async function updateStatus() {
         try {
             const response = await fetch(`/api/pemantauan_status/${PERJALANAN_ID}`);
-            if (!response.ok) return;
-            const data = await response.json();
-            const kameraTerdeteksi = data.kamera_terdeteksi;
-            for (let i = 1; i <= 4; i++) {
-                document.getElementById(`cam-feed-${i}`).classList.toggle('detected', kameraTerdeteksi.includes(i));
+            if (!response.ok) {
+                console.error("Gagal mengambil status pemantauan.");
+                return;
             }
-        } catch (error) { console.error("Error:", error); }
-    }
+            const data = await response.json();
+            const kameraTerdeteksi = data.kamera_terdeteksi || [];
+            
+            // Reset semua kamera ke status default
+            for (let i = 1; i <= 6; i++) {
+                document.getElementById(`cam-box-${i}`).classList.remove('detected');
+            }
 
-    function stopAllFeeds() {
-        for (let i = 1; i <= 6; i++) {
-            const img = document.getElementById(`cam-img-${i}`);
-            if (img) img.src = '';
+            // Tandai kamera yang sudah terdeteksi
+            kameraTerdeteksi.forEach(camId => {
+                const camBox = document.getElementById(`cam-box-${camId}`);
+                if (camBox) {
+                    camBox.classList.add('detected');
+                }
+            });
+
+        } catch (error) { 
+            console.error("Error saat update status:", error); 
         }
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-        updateStatus();
-        intervalId = setInterval(updateStatus, 3000);
+        updateStatus(); // Panggil sekali saat halaman dimuat
+        statusUpdateInterval = setInterval(updateStatus, 3000); // Perbarui setiap 3 detik
+
+        // Hentikan interval jika pengguna meninggalkan halaman
         window.addEventListener('beforeunload', () => {
-            clearInterval(intervalId);
-            stopAllFeeds();
+            clearInterval(statusUpdateInterval);
         });
     });
 </script>
